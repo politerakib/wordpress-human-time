@@ -64,12 +64,29 @@ ob_start();
                     <div id="dropZone" class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center transition hover:border-brand hover:bg-brand/10 dark:border-slate-700 dark:bg-slate-800">
                         <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand"></i>
                         <p class="mt-4 text-base font-semibold text-slate-700 dark:text-slate-200">Drag & drop your file here</p>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">or click to browse from your computer</p>
+                        <p id="dropZoneHint" class="text-sm text-slate-500 dark:text-slate-400">or click to browse from your computer</p>
+                        <p id="dropZoneSelection" class="mt-3 hidden text-sm font-medium text-brand dark:text-brand/80"></p>
                         <input type="file" name="file" id="fileInput" class="hidden" required>
                     </div>
+                    <div id="filePreview" class="hidden rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition dark:border-slate-800 dark:bg-slate-900/70">
+                        <div class="flex items-center gap-4">
+                            <div id="filePreviewThumb" class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-2xl text-brand"></div>
+                            <div class="min-w-0 flex-1">
+                                <p id="filePreviewName" class="truncate text-sm font-semibold text-slate-900 dark:text-white"></p>
+                                <p id="filePreviewMeta" class="text-xs text-slate-500 dark:text-slate-400"></p>
+                            </div>
+                            <button type="button" id="fileClear" class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-brand hover:text-brand dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand dark:hover:text-brand">
+                                <i class="fa-solid fa-rotate"></i>
+                                Change
+                            </button>
+                        </div>
+                        <div id="filePreviewImage" class="mt-4 hidden overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+                            <img src="" alt="Selected file preview" class="h-40 w-full object-cover" loading="lazy">
+                        </div>
+                    </div>
                     <div>
-                        <label for="email" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Notify me when downloaded (optional)</label>
-                        <input type="email" id="email" name="email" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-brand focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="you@example.com" autocomplete="off">
+                        <label for="title" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Title (optional)</label>
+                        <input type="text" id="title" name="title" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-brand focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Give your file a friendly title" autocomplete="off" maxlength="255">
                     </div>
                     <button type="submit" class="w-full rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/50">Start Upload</button>
                 </form>

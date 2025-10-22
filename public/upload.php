@@ -25,6 +25,8 @@ if (!isset($_FILES['file']) || !is_uploaded_file($_FILES['file']['tmp_name'])) {
     exit;
 }
 
+$title = sanitize_text_input($_POST['title'] ?? null);
+
 $file = $_FILES['file'];
 
 if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -74,7 +76,7 @@ $token = generate_token(18);
 
 try {
     $db = get_db_connection();
-    $stmt = $db->prepare('INSERT INTO files (file_name, stored_path, token, upload_time, expiry_time, file_size, mime_type) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    $stmt = $db->prepare('INSERT INTO files (title, file_name, stored_path, token, upload_time, expiry_time, file_size, mime_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 
     if (!$stmt) {
         throw new RuntimeException('Database statement preparation failed: ' . $db->error);
@@ -85,7 +87,7 @@ try {
     $expiryTime = $expiryAt->format('Y-m-d H:i:s');
     $fileSize = (int) $file['size'];
 
-    $stmt->bind_param('sssssis', $originalName, $relativePath, $token, $uploadTime, $expiryTime, $fileSize, $mimeType);
+    $stmt->bind_param('ssssssis', $title, $originalName, $relativePath, $token, $uploadTime, $expiryTime, $fileSize, $mimeType);
 
     if (!$stmt->execute()) {
         throw new RuntimeException('Failed to save upload metadata: ' . $stmt->error);
@@ -106,10 +108,12 @@ $response = [
     'message' => 'File uploaded successfully.',
     'data' => [
         'fileName' => $originalName,
+        'title' => $title,
         'fileSize' => format_bytes((int) $file['size']),
         'expiresAt' => $expiryAt->format(DateTimeInterface::ATOM),
         'downloadUrl' => $downloadUrl,
         'token' => $token,
+        'downloadCount' => 0,
     ],
 ];
 

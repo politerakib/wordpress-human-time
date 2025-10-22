@@ -38,6 +38,27 @@ function sanitize_filename(string $filename): string
     return $filename ?: 'file';
 }
 
+function sanitize_text_input(?string $value, int $maxLength = 255): ?string
+{
+    if ($value === null) {
+        return null;
+    }
+
+    $value = strip_tags(trim($value));
+
+    if ($value === '') {
+        return null;
+    }
+
+    $value = preg_replace('/\s+/', ' ', $value) ?? $value;
+
+    if (mb_strlen($value) > $maxLength) {
+        $value = mb_substr($value, 0, $maxLength);
+    }
+
+    return $value === '' ? null : $value;
+}
+
 function format_bytes(int $bytes, int $precision = 2): string
 {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];

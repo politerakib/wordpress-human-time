@@ -15,7 +15,7 @@ function fetch_file_by_token(string $token): ?array
     }
 
     $db = get_db_connection();
-    $stmt = $db->prepare('SELECT id, file_name, stored_path, token, upload_time, expiry_time, file_size, mime_type FROM files WHERE token = ? LIMIT 1');
+    $stmt = $db->prepare('SELECT id, title, file_name, stored_path, token, upload_time, expiry_time, file_size, mime_type, download_count FROM files WHERE token = ? LIMIT 1');
 
     if (!$stmt) {
         throw new RuntimeException('Database error: ' . $db->error);
@@ -91,6 +91,14 @@ if ($token !== '' && $downloadAction) {
     header('Pragma: public');
     header('Content-Length: ' . (string) $file['file_size']);
 
+    $db = get_db_connection();
+    $update = $db->prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?');
+    if ($update) {
+        $update->bind_param('i', $file['id']);
+        $update->execute();
+        $update->close();
+    }
+
     readfile($fullPath);
     exit;
 }
@@ -114,7 +122,11 @@ if ($token !== '') {
             $fileRecord = null;
             $errorMessage = 'This file has expired and is no longer available.';
         } else {
-            $pageTitle = 'Download ' . $fileRecord['file_name'];
+            if (!empty($fileRecord['title'])) {
+                $pageTitle = 'Download ' . $fileRecord['title'];
+            } else {
+                $pageTitle = 'Download ' . $fileRecord['file_name'];
+            }
         }
     } elseif (!$errorMessage) {
         $errorMessage = 'We could not find a file for that token.';
@@ -139,6 +151,12 @@ ob_start();
 
         <?php if ($fileRecord): ?>
             <div class="mt-8 space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800/60">
+                <?php if (!empty($fileRecord['title'])): ?>
+                    <div>
+                        <p class="text-sm uppercase text-slate-500 dark:text-slate-400">Title</p>
+                        <p class="text-lg font-semibold text-slate-900 dark:text-white"><?= htmlspecialchars($fileRecord['title'], ENT_QUOTES) ?></p>
+                    </div>
+                <?php endif; ?>
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm uppercase text-slate-500 dark:text-slate-400">File name</p>
@@ -157,6 +175,9 @@ ob_start();
                         <p class="text-sm text-slate-700 dark:text-slate-200"><?= format_datetime($expiry) ?></p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Time left: <?= remaining_time_string($expiry) ?></p>
                     </div>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                    Downloaded <?= (int) $fileRecord['download_count'] ?> <?= (int) $fileRecord['download_count'] === 1 ? 'time' : 'times' ?>
                 </div>
                 <a href="download.php?token=<?= urlencode($fileRecord['token']) ?>&download=1" class="flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">
                     <i class="fa-solid fa-download"></i>
