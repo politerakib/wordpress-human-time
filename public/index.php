@@ -2,6 +2,8 @@
 require_once __DIR__ . '/includes/functions.php';
 start_session();
 
+$csrfToken = get_csrf_token();
+
 $pageTitle = 'FileShare24 – Upload. Share. Done.';
 
 ob_start();
