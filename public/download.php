@@ -98,12 +98,37 @@ if ($token !== '' && $downloadAction) {
     readfile($fullPath);
 
     if ($shouldIncrement) {
-        $db = get_db_connection();
-        $update = $db->prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?');
-        if ($update) {
-            $update->bind_param('i', $file['id']);
-            $update->execute();
-            $update->close();
+        $fingerprintParts = [
+            (string) $file['id'],
+            $_SERVER['REMOTE_ADDR'] ?? '',
+            $_SERVER['HTTP_USER_AGENT'] ?? '',
+        ];
+        $fingerprint = hash('sha256', implode('|', $fingerprintParts));
+        $now = microtime(true);
+        $minInterval = 1.0; // seconds
+
+        if (!isset($_SESSION['recent_download_hits']) || !is_array($_SESSION['recent_download_hits'])) {
+            $_SESSION['recent_download_hits'] = [];
+        }
+
+        $lastHit = $_SESSION['recent_download_hits'][$fingerprint] ?? 0.0;
+
+        if (($now - $lastHit) >= $minInterval) {
+            $db = get_db_connection();
+            $update = $db->prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?');
+            if ($update) {
+                $update->bind_param('i', $file['id']);
+                $update->execute();
+                $update->close();
+                $_SESSION['recent_download_hits'][$fingerprint] = $now;
+            }
+        }
+
+        // Clean up stale fingerprints to keep the session lean
+        foreach ($_SESSION['recent_download_hits'] as $storedFingerprint => $timestamp) {
+            if (($now - (float) $timestamp) > 300) { // 5 minutes
+                unset($_SESSION['recent_download_hits'][$storedFingerprint]);
+            }
         }
     }
 
