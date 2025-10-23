@@ -98,35 +98,48 @@ if ($token !== '' && $downloadAction) {
     readfile($fullPath);
 
     if ($shouldIncrement) {
-        $fingerprintParts = [
+        $fingerprint = hash('sha256', implode('|', [
             (string) $file['id'],
             $_SERVER['REMOTE_ADDR'] ?? '',
             $_SERVER['HTTP_USER_AGENT'] ?? '',
-        ];
-        $fingerprint = hash('sha256', implode('|', $fingerprintParts));
+        ]));
+        $requestSignature = hash('sha256', implode('|', [
+            $_SERVER['REQUEST_URI'] ?? '',
+            $_SERVER['HTTP_USER_AGENT'] ?? '',
+            $_SERVER['HTTP_ACCEPT'] ?? '',
+            $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '',
+        ]));
         $now = microtime(true);
-        $minInterval = 1.0; // seconds
+        $minInterval = 30.0; // seconds
 
         if (!isset($_SESSION['recent_download_hits']) || !is_array($_SESSION['recent_download_hits'])) {
             $_SESSION['recent_download_hits'] = [];
         }
 
-        $lastHit = $_SESSION['recent_download_hits'][$fingerprint] ?? 0.0;
+        $recentRecord = $_SESSION['recent_download_hits'][$fingerprint] ?? null;
+        $lastTimestamp = is_array($recentRecord) ? (float) ($recentRecord['timestamp'] ?? 0.0) : 0.0;
+        $lastSignature = is_array($recentRecord) ? (string) ($recentRecord['signature'] ?? '') : '';
 
-        if (($now - $lastHit) >= $minInterval) {
+        $isDuplicate = ($now - $lastTimestamp) < $minInterval && $lastSignature === $requestSignature;
+
+        if (!$isDuplicate) {
             $db = get_db_connection();
             $update = $db->prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?');
             if ($update) {
                 $update->bind_param('i', $file['id']);
                 $update->execute();
                 $update->close();
-                $_SESSION['recent_download_hits'][$fingerprint] = $now;
+                $_SESSION['recent_download_hits'][$fingerprint] = [
+                    'timestamp' => $now,
+                    'signature' => $requestSignature,
+                ];
             }
         }
 
         // Clean up stale fingerprints to keep the session lean
-        foreach ($_SESSION['recent_download_hits'] as $storedFingerprint => $timestamp) {
-            if (($now - (float) $timestamp) > 300) { // 5 minutes
+        foreach ($_SESSION['recent_download_hits'] as $storedFingerprint => $record) {
+            $timestamp = is_array($record) ? (float) ($record['timestamp'] ?? 0.0) : (float) $record;
+            if (($now - $timestamp) > 300) { // 5 minutes
                 unset($_SESSION['recent_download_hits'][$storedFingerprint]);
             }
         }
