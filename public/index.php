@@ -54,17 +54,17 @@ ob_start();
 </section>
 
 <section class="mt-20" id="upload">
-    <div class="grid gap-10 lg:grid-cols-2">
-        <div class="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-brand/10 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-900/90">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Upload your file</h2>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Max file size: 100MB. Supported types: All common documents, images, archives, and media files. Executables are blocked for your safety.</p>
+    <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+        <div class="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-xl shadow-brand/10 backdrop-blur-lg dark:border-slate-800 dark:bg-slate-900/95">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Deliver your file in seconds</h2>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Choose any document, media file, or archive up to 100MB. We screen uploads for dangerous types and stream them securely to your recipients.</p>
             <div class="mt-6">
                 <form id="uploadForm" class="space-y-6" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES) ?>">
-                    <div id="dropZone" class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center transition hover:border-brand hover:bg-brand/10 dark:border-slate-700 dark:bg-slate-800">
+                    <div id="dropZone" class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-gradient-to-b from-white via-slate-50 to-white px-6 py-16 text-center transition hover:border-brand hover:bg-brand/10 dark:border-slate-700 dark:bg-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
                         <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand"></i>
-                        <p class="mt-4 text-base font-semibold text-slate-700 dark:text-slate-200">Drag & drop your file here</p>
-                        <p id="dropZoneHint" class="text-sm text-slate-500 dark:text-slate-400">or click to browse from your computer</p>
+                        <p class="mt-4 text-base font-semibold text-slate-700 dark:text-slate-200">Drag and drop to start your upload</p>
+                        <p id="dropZoneHint" class="text-sm text-slate-500 dark:text-slate-400">Prefer to browse? Click to choose a file from your device.</p>
                         <p id="dropZoneSelection" class="mt-3 hidden text-sm font-medium text-brand dark:text-brand/80"></p>
                         <input type="file" name="file" id="fileInput" class="hidden" required>
                     </div>
@@ -86,9 +86,9 @@ ob_start();
                     </div>
                     <div>
                         <label for="title" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Title (optional)</label>
-                        <input type="text" id="title" name="title" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-brand focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Give your file a friendly title" autocomplete="off" maxlength="255">
+                        <input type="text" id="title" name="title" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-brand focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Add a descriptive title for the download page" autocomplete="off" maxlength="255">
                     </div>
-                    <button type="submit" class="w-full rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/50">Start Upload</button>
+                    <button type="submit" class="w-full rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/50">Start upload</button>
                 </form>
                 <div id="progressContainer" class="mt-6 hidden">
                     <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
@@ -105,15 +105,15 @@ ob_start();
         <div class="space-y-6">
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-md dark:border-slate-800 dark:bg-slate-900">
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Real-time progress</h3>
-                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Watch your upload complete with the live progress bar. We handle large files smoothly using asynchronous uploads.</p>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Track every percent with live progress indicators so you always know when your link is ready.</p>
             </div>
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-md dark:border-slate-800 dark:bg-slate-900">
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Copy & share instantly</h3>
-                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Once uploaded, copy your secure link with one click and share it confidently.</p>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Send the branded link straight from the dashboard or share the direct download URL for power users.</p>
             </div>
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-md dark:border-slate-800 dark:bg-slate-900">
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Auto clean-up</h3>
-                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">We delete files and metadata automatically after 24 hours so nothing lingers.</p>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">We delete files and metadata automatically after 24 hours so nothing lingers in storage.</p>
             </div>
         </div>
     </div>
@@ -176,10 +176,10 @@ ob_start();
             <div class="absolute -top-5 right-6 rounded-full bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white">24h expiry</div>
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Download experience</h3>
             <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Recipients get a clean, branded download page with file metadata, expiry countdown, and a single-click download button.</p>
-            <div class="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800/60">
-                <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300"><span>Document.pdf</span><span>23.4 MB</span></div>
-                <div class="flex items-center justify-between text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400"><span>Expires in</span><span>22h 16m</span></div>
-                <button class="w-full rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark" type="button">Download</button>
+            <div class="mt-6 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
+                <p class="font-semibold text-slate-900 dark:text-white">Polished download cards include file name, size, and MIME type for complete transparency.</p>
+                <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Automatic deletion countdown keeps recipients informed up to the second.</p>
+                <p class="rounded-full bg-white px-4 py-2 text-center text-xs font-semibold uppercase tracking-wide text-brand shadow-sm dark:bg-slate-900">One-click secure download</p>
             </div>
         </div>
     </div>

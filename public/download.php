@@ -7,6 +7,7 @@ start_session();
 
 $token = trim($_GET['token'] ?? '');
 $downloadAction = isset($_GET['download']);
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 function fetch_file_by_token(string $token): ?array
 {
@@ -87,19 +88,25 @@ if ($token !== '' && $downloadAction) {
     header('Content-Type: ' . ($file['mime_type'] ?: 'application/octet-stream'));
     header('Content-Disposition: attachment; filename="' . addcslashes($safeName, "\\\"") . '"; filename*=UTF-8\'\'' . rawurlencode($safeName));
     header('Expires: 0');
-    header('Cache-Control: must-revalidate');
+    header('Cache-Control: no-store, must-revalidate');
     header('Pragma: public');
     header('Content-Length: ' . (string) $file['file_size']);
+    header('Accept-Ranges: none');
 
-    $db = get_db_connection();
-    $update = $db->prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?');
-    if ($update) {
-        $update->bind_param('i', $file['id']);
-        $update->execute();
-        $update->close();
-    }
+    $shouldIncrement = $requestMethod === 'GET' && empty($_SERVER['HTTP_RANGE'] ?? '');
 
     readfile($fullPath);
+
+    if ($shouldIncrement) {
+        $db = get_db_connection();
+        $update = $db->prepare('UPDATE files SET download_count = download_count + 1 WHERE id = ?');
+        if ($update) {
+            $update->bind_param('i', $file['id']);
+            $update->execute();
+            $update->close();
+        }
+    }
+
     exit;
 }
 
@@ -137,8 +144,8 @@ ob_start();
 ?>
 <section class="mx-auto w-full max-w-3xl">
     <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-800 dark:bg-slate-900">
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Find your file</h1>
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Enter your download token to retrieve file details, or open the direct link someone shared with you.</p>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Retrieve a shared file</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Enter a download token to load file details, or follow the direct link shared with you.</p>
         <form class="mt-6 flex flex-col gap-3 sm:flex-row" method="get">
             <input type="text" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES) ?>" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus:border-brand focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" placeholder="Enter download token" required>
             <button type="submit" class="rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark">Search</button>
@@ -150,6 +157,11 @@ ob_start();
         <?php endif; ?>
 
         <?php if ($fileRecord): ?>
+            <?php
+                $baseUrl = rtrim(BASE_URL, '/');
+                $downloadPagePath = $baseUrl . '/download/' . rawurlencode($fileRecord['token']);
+                $downloadFilePath = $downloadPagePath . '/file';
+            ?>
             <div class="mt-8 space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800/60">
                 <?php if (!empty($fileRecord['title'])): ?>
                     <div>
@@ -173,16 +185,22 @@ ob_start();
                         <p class="text-sm uppercase text-slate-500 dark:text-slate-400">Expires</p>
                         <?php $expiry = new DateTimeImmutable($fileRecord['expiry_time']); ?>
                         <p class="text-sm text-slate-700 dark:text-slate-200"><?= format_datetime($expiry) ?></p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Time left: <?= remaining_time_string($expiry) ?></p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Time remaining: <?= remaining_time_string($expiry) ?></p>
                     </div>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                     Downloaded <?= (int) $fileRecord['download_count'] ?> <?= (int) $fileRecord['download_count'] === 1 ? 'time' : 'times' ?>
                 </div>
-                <a href="download.php?token=<?= urlencode($fileRecord['token']) ?>&download=1" class="flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">
-                    <i class="fa-solid fa-download"></i>
-                    Download file
-                </a>
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <a href="<?= htmlspecialchars($downloadPagePath, ENT_QUOTES) ?>" class="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-slate-700 transition hover:border-brand hover:text-brand dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand dark:hover:text-brand">
+                        <i class="fa-solid fa-link"></i>
+                        View download page
+                    </a>
+                    <a href="<?= htmlspecialchars($downloadFilePath, ENT_QUOTES) ?>" class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">
+                        <i class="fa-solid fa-download"></i>
+                        Download file
+                    </a>
+                </div>
             </div>
         <?php endif; ?>
     </div>

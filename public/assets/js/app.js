@@ -255,13 +255,15 @@
         const downloadCount = Number.isFinite(Number(data.downloadCount)) ? Number(data.downloadCount) : 0;
         const downloadLabel = downloadCount === 1 ? 'time' : 'times';
         const downloadUrl = typeof data.downloadUrl === 'string' ? data.downloadUrl : '';
+        const directDownloadUrl = typeof data.directDownloadUrl === 'string' ? data.directDownloadUrl : '';
         const safeDownloadUrl = escapeHtml(downloadUrl);
+        const safeDirectDownloadUrl = escapeHtml(directDownloadUrl || downloadUrl);
         card.innerHTML = `
             <div class="flex items-start justify-between gap-4">
                 <div class="min-w-0">
-                    <p class="text-sm uppercase text-slate-500 dark:text-slate-400">File ready</p>
+                    <p class="text-sm uppercase text-slate-500 dark:text-slate-400">Your secure link is ready</p>
                     ${data.title ? `<p class="text-lg font-semibold text-slate-900 dark:text-white">${escapeHtml(data.title)}</p>` : ''}
-                    <p class="text-xs text-slate-500 dark:text-slate-400">${escapeHtml(data.fileName)} • ${escapeHtml(data.fileSize)} • expires soon</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">${escapeHtml(data.fileName)} • ${escapeHtml(data.fileSize)} • expires within 24 hours</p>
                 </div>
                 <button id="copyLink" class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-brand hover:text-brand dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand dark:hover:text-brand">
                     <i class="fa-solid fa-link"></i>
@@ -269,17 +271,23 @@
                 </button>
             </div>
             <div class="rounded-2xl border border-dashed border-brand/40 bg-brand/5 p-4 text-sm text-slate-600 dark:border-brand/20 dark:bg-brand/10 dark:text-slate-200">
-                Share this link:
+                Share this link with anyone who needs the file:
                 <span class="mt-2 block break-all text-sm font-mono text-brand dark:text-brand/90">${safeDownloadUrl}</span>
                 <span class="mt-2 block text-xs text-slate-500 dark:text-slate-400">Time remaining: <span id="expiryCountdown"></span></span>
             </div>
             <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
                 Downloads tracked: ${downloadCount} ${downloadLabel}
             </div>
-            <a href="${safeDownloadUrl}" class="flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">
-                <i class="fa-solid fa-paper-plane"></i>
-                Open download page
-            </a>
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <a href="${safeDownloadUrl}" class="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Open download page
+                </a>
+                <a href="${safeDirectDownloadUrl}" class="flex flex-1 items-center justify-center gap-2 rounded-full border border-brand px-6 py-3 text-sm font-semibold uppercase tracking-wide text-brand transition hover:bg-brand hover:text-white dark:hover:bg-brand">
+                    <i class="fa-solid fa-download"></i>
+                    Download now
+                </a>
+            </div>
         `;
 
         uploadResult.appendChild(card);
@@ -333,7 +341,7 @@
             formData.append('csrf_token', window.__CSRF_TOKEN || '');
 
             const request = new XMLHttpRequest();
-            request.open('POST', 'upload.php');
+            request.open('POST', 'upload');
 
             request.upload.addEventListener('progress', (e) => {
                 if (!progressContainer || !progressBar || !progressPercent) return;

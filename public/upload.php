@@ -101,7 +101,8 @@ try {
     exit;
 }
 
-$downloadUrl = rtrim(BASE_URL, '/') . '/download.php?token=' . urlencode($token);
+$downloadUrl = rtrim(BASE_URL, '/') . '/download/' . rawurlencode($token);
+$directDownloadUrl = $downloadUrl . '/file';
 
 $response = [
     'success' => true,
@@ -112,6 +113,7 @@ $response = [
         'fileSize' => format_bytes((int) $file['size']),
         'expiresAt' => $expiryAt->format(DateTimeInterface::ATOM),
         'downloadUrl' => $downloadUrl,
+        'directDownloadUrl' => $directDownloadUrl,
         'token' => $token,
         'downloadCount' => 0,
     ],

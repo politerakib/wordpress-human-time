@@ -3,6 +3,9 @@ require_once __DIR__ . '/functions.php';
 start_session();
 $csrfToken = get_csrf_token();
 $theme = $_SESSION['theme_preference'] ?? 'system';
+$scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\');
+$basePath = $scriptDir === '' || $scriptDir === '.' ? '' : $scriptDir;
+$homeUrl = $basePath === '' ? '/' : $basePath . '/';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth" data-theme-preference="<?= htmlspecialchars($theme, ENT_QUOTES) ?>">
@@ -32,19 +35,24 @@ $theme = $_SESSION['theme_preference'] ?? 'system';
 <body class="min-h-screen bg-slate-100 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
 <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <a href="index.php" class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">FileShare<span class="text-brand">24</span></a>
+        <a href="<?= htmlspecialchars($homeUrl, ENT_QUOTES) ?>" class="flex items-center gap-3 text-xl font-bold tracking-tight text-slate-900 dark:text-white" aria-label="FileShare24 home">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 p-2">
+                <img src="<?= htmlspecialchars(($basePath === '' ? '' : $basePath) . '/assets/img/logo.svg', ENT_QUOTES) ?>" alt="FileShare24" class="h-6 w-6">
+            </span>
+            <span>FileShare<span class="text-brand">24</span></span>
+        </a>
         <nav class="hidden gap-6 text-sm font-medium md:flex">
-            <a href="#features" class="transition hover:text-brand dark:hover:text-brand">Features</a>
-            <a href="#why-us" class="transition hover:text-brand dark:hover:text-brand">Why Us</a>
-            <a href="#faq" class="transition hover:text-brand dark:hover:text-brand">FAQ</a>
-            <a href="download.php" class="transition hover:text-brand dark:hover:text-brand">Find File</a>
+            <a href="<?= htmlspecialchars($homeUrl . '#features', ENT_QUOTES) ?>" class="transition hover:text-brand dark:hover:text-brand">Features</a>
+            <a href="<?= htmlspecialchars($homeUrl . '#why-us', ENT_QUOTES) ?>" class="transition hover:text-brand dark:hover:text-brand">Why Us</a>
+            <a href="<?= htmlspecialchars($homeUrl . '#faq', ENT_QUOTES) ?>" class="transition hover:text-brand dark:hover:text-brand">FAQ</a>
+            <a href="<?= htmlspecialchars($basePath . '/download', ENT_QUOTES) ?>" class="transition hover:text-brand dark:hover:text-brand">Find File</a>
         </nav>
         <div class="flex items-center gap-3">
             <button id="themeToggle" type="button" class="inline-flex items-center justify-center rounded-full border border-slate-200 p-2 text-slate-700 transition hover:border-brand hover:text-brand dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand dark:hover:text-brand" aria-label="Toggle theme">
                 <span class="sun hidden text-xl">☀️</span>
                 <span class="moon hidden text-xl">🌙</span>
             </button>
-            <a href="#upload" class="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">Upload</a>
+            <a href="<?= htmlspecialchars($homeUrl . '#upload', ENT_QUOTES) ?>" class="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark">Upload</a>
         </div>
     </div>
 </header>
